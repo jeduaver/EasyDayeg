@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const SANS = '"Helvetica Neue", Arial, sans-serif';
 
 const SAMPLE = {
   items: [
@@ -11,6 +12,7 @@ const SAMPLE = {
         'Through many dangers, toils and snares,\nI have already come;\n\n' +
         "'Tis grace hath brought me safe thus far,\nAnd grace will lead me home.",
       bg: null,
+      themeId: 'hymn',
     },
     {
       id: 'holy-holy-holy',
@@ -20,11 +22,25 @@ const SAMPLE = {
         'Holy, holy, holy, merciful and mighty!\nGod in three Persons, blessed Trinity!',
       bg: { type: 'color', color: '#3b1f4a' },
     },
-    { id: 'welcome', title: 'Welcome', lyrics: 'Welcome!\n\nWe are glad you are here', bg: { type: 'color', color: '#0f3b2e' } },
+    {
+      id: 'welcome',
+      title: 'Welcome',
+      lyrics: 'Welcome!\n\nWe are glad you are here',
+      bg: { type: 'color', color: '#0f3b2e' },
+      themeId: 'bold-caps',
+    },
   ],
   playlist: ['welcome', 'amazing-grace', 'holy-holy-holy'],
   defaultBg: { type: 'color', color: '#10213f' },
-  style: { size: 8, color: '#ffffff', font: '"Helvetica Neue", Arial, sans-serif' },
+  // A theme is a reusable text look plus an optional background. Items pick one
+  // with themeId; items without one use defaultThemeId.
+  themes: [
+    { id: 'classic', name: 'Classic', font: SANS, weight: 600, size: 8, color: '#ffffff', align: 'center', valign: 'middle', shadow: true, outline: false, uppercase: false, bg: null },
+    { id: 'hymn', name: 'Hymn', font: 'Georgia, "Times New Roman", serif', weight: 400, size: 8, color: '#f6ecd6', align: 'center', valign: 'middle', shadow: true, outline: false, uppercase: false, bg: { type: 'color', color: '#2a1d14' } },
+    { id: 'lower-third', name: 'Lower third', font: SANS, weight: 600, size: 5.5, color: '#ffffff', align: 'center', valign: 'bottom', shadow: true, outline: true, uppercase: false, bg: null },
+    { id: 'bold-caps', name: 'Bold caps', font: '"Arial Black", Impact, sans-serif', weight: 800, size: 9, color: '#ffffff', align: 'center', valign: 'middle', shadow: false, outline: true, uppercase: true, bg: { type: 'color', color: '#111111' } },
+  ],
+  defaultThemeId: 'classic',
 };
 
 let db;
@@ -39,7 +55,11 @@ const ui = {
 
 const slidesOf = (item) => (item ? item.lyrics.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean) : []);
 const itemById = (id) => db.items.find((i) => i.id === id);
-const bgFor = (item) => (item && item.bg) || db.defaultBg;
+const themeById = (id) => db.themes.find((t) => t.id === id);
+const defaultTheme = () => themeById(db.defaultThemeId) || db.themes[0];
+const themeFor = (item) => (item && themeById(item.themeId)) || defaultTheme();
+// Item background wins, then the item's theme, then the global default.
+const bgFor = (item) => (item && item.bg) || themeFor(item).bg || db.defaultBg;
 const bgLabel = (bg) => (!bg ? 'Default' : bg.type === 'color' ? bg.color : bg.name || bg.type);
 
 let saveTimer;
@@ -67,7 +87,7 @@ function pushState() {
     showText: ui.showText,
     showBg: ui.showBg,
     black: ui.black,
-    style: db.style,
+    style: themeFor(item),
   };
   window.easy.sendState(state);
   preview.render(state);
@@ -189,6 +209,8 @@ function renderSlides() {
   const item = itemById(ui.selectedId);
   $('itemTitle').textContent = item ? item.title : 'Select an item';
   $('btnEdit').disabled = !item;
+  $('itemTheme').disabled = !item;
+  $('itemTheme').value = (item && themeById(item.themeId) && item.themeId) || '';
   const grid = $('slides');
   grid.innerHTML = '';
   if (!item) return;
@@ -201,8 +223,9 @@ function renderSlides() {
     el.insertAdjacentHTML('beforeend', '<div class="t"></div><div class="n"></div>');
     const t = el.querySelector('.t');
     t.textContent = text;
-    t.style.color = db.style.color;
-    t.style.fontFamily = db.style.font;
+    const theme = themeFor(item);
+    applyThemeText(t, theme);
+    t.style.fontSize = (theme.size / 8) * 12 + 'px';
     el.querySelector('.n').textContent = i + 1;
     el.classList.toggle('live', !!ui.live && ui.live.itemId === item.id && ui.live.index === i);
     el.onclick = () => goLive(item.id, i);
@@ -213,6 +236,9 @@ function renderSlides() {
 function select(id, playlistPos) {
   ui.selectedId = id;
   ui.fromPlaylist = playlistPos;
+  editThemeId = themeFor(itemById(id)).id; // theme panel follows the selected item
+  renderThemeOptions();
+  renderThemeFields();
   renderLibrary();
   renderPlaylist();
   renderSlides();
@@ -224,10 +250,136 @@ function renderAll() {
   renderSlides();
   $('bgName').textContent = db.defaultBg.type === 'color' ? '' : db.defaultBg.name;
   if (db.defaultBg.type === 'color') $('bgColor').value = db.defaultBg.color;
-  $('textSize').value = db.style.size;
-  $('textColor').value = db.style.color;
-  $('textFont').value = db.style.font;
+  renderThemeOptions();
+  renderThemeFields();
 }
+
+// ---------- Themes ----------
+
+let editThemeId = null;
+const editTheme = () => themeById(editThemeId) || defaultTheme();
+
+function renderThemeOptions() {
+  const pick = $('thPick');
+  const itemSel = $('itemTheme');
+  pick.innerHTML = '';
+  itemSel.innerHTML = '';
+  itemSel.add(new Option(`Default (${defaultTheme().name})`, ''));
+  for (const t of db.themes) {
+    pick.add(new Option(t.id === db.defaultThemeId ? `${t.name} ★` : t.name, t.id));
+    itemSel.add(new Option(t.name, t.id));
+  }
+  pick.value = editTheme().id;
+  const item = itemById(ui.selectedId);
+  itemSel.value = (item && themeById(item.themeId) && item.themeId) || '';
+}
+
+function renderThemeFields() {
+  const t = editTheme();
+  $('thName').value = t.name;
+  $('thDefault').checked = t.id === db.defaultThemeId;
+  $('thDefault').disabled = t.id === db.defaultThemeId;
+  $('thFont').value = t.font;
+  $('thWeight').value = String(t.weight);
+  $('thSize').value = t.size;
+  $('thColor').value = t.color;
+  $('thAlign').value = t.align;
+  $('thValign').value = t.valign;
+  $('thShadow').checked = !!t.shadow;
+  $('thOutline').checked = !!t.outline;
+  $('thUpper').checked = !!t.uppercase;
+  if (t.bg && t.bg.type === 'color') $('thBgColor').value = t.bg.color;
+  $('thBgName').textContent = !t.bg ? 'Uses the default background' : t.bg.type === 'color' ? '' : t.bg.name;
+  $('thDelete').disabled = db.themes.length < 2;
+}
+
+function themeChanged() {
+  save();
+  renderThemeFields();
+  pushState();
+}
+
+// Field id -> theme property, and how to read the input's value.
+const THEME_FIELDS = {
+  thFont: ['font', (el) => el.value],
+  thWeight: ['weight', (el) => +el.value],
+  thSize: ['size', (el) => +el.value],
+  thColor: ['color', (el) => el.value],
+  thAlign: ['align', (el) => el.value],
+  thValign: ['valign', (el) => el.value],
+  thShadow: ['shadow', (el) => el.checked],
+  thOutline: ['outline', (el) => el.checked],
+  thUpper: ['uppercase', (el) => el.checked],
+};
+for (const [id, [prop, read]] of Object.entries(THEME_FIELDS)) {
+  $(id).addEventListener('input', (e) => {
+    editTheme()[prop] = read(e.target);
+    themeChanged();
+  });
+}
+
+$('thPick').onchange = (e) => {
+  editThemeId = e.target.value;
+  renderThemeFields();
+};
+$('thName').oninput = (e) => {
+  editTheme().name = e.target.value || 'Untitled theme';
+  save();
+  renderThemeOptions();
+};
+$('thDefault').onchange = (e) => {
+  if (e.target.checked) db.defaultThemeId = editTheme().id;
+  save();
+  renderThemeOptions();
+  themeChanged();
+};
+$('thNew').onclick = () => {
+  const copy = { ...structuredClone(editTheme()), id: `theme-${Date.now()}`, name: `${editTheme().name} copy` };
+  db.themes.push(copy);
+  editThemeId = copy.id;
+  save();
+  renderThemeOptions();
+  renderThemeFields();
+  $('thName').select();
+};
+$('thDelete').onclick = () => {
+  const t = editTheme();
+  if (db.themes.length < 2 || !confirm(`Delete theme "${t.name}"? Items using it switch to the default theme.`)) return;
+  db.themes = db.themes.filter((x) => x !== t);
+  for (const item of db.items) if (item.themeId === t.id) item.themeId = null;
+  if (db.defaultThemeId === t.id) db.defaultThemeId = db.themes[0].id;
+  editThemeId = db.defaultThemeId;
+  save();
+  renderThemeOptions();
+  themeChanged();
+};
+$('thBgColor').oninput = (e) => {
+  editTheme().bg = { type: 'color', color: e.target.value };
+  themeChanged();
+};
+$('thBgMedia').onclick = async () => {
+  const media = await window.easy.pickMedia();
+  if (!media) return;
+  editTheme().bg = media;
+  themeChanged();
+};
+$('thBgNone').onclick = () => {
+  editTheme().bg = null;
+  themeChanged();
+};
+$('itemTheme').onchange = (e) => {
+  const item = itemById(ui.selectedId);
+  if (!item) return;
+  item.themeId = e.target.value || null;
+  e.target.blur(); // keep arrow keys for slides
+  if (item.themeId) {
+    editThemeId = item.themeId; // show the chosen theme in the editor
+    renderThemeOptions();
+    renderThemeFields();
+  }
+  save();
+  pushState();
+};
 
 // ---------- Editor ----------
 
@@ -319,9 +471,6 @@ $('bgMedia').onclick = async () => {
   save();
   pushState();
 };
-$('textSize').oninput = (e) => ((db.style.size = +e.target.value), save(), pushState());
-$('textColor').oninput = (e) => ((db.style.color = e.target.value), save(), pushState());
-$('textFont').onchange = (e) => ((db.style.font = e.target.value), save(), pushState());
 
 document.addEventListener('keydown', (e) => {
   if ($('editor').open || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
@@ -337,7 +486,14 @@ window.addEventListener('resize', () => preview.fit());
 
 (async () => {
   db = (await window.easy.loadLibrary()) || structuredClone(SAMPLE);
-  db.style = { ...SAMPLE.style, ...db.style };
+  if (!Array.isArray(db.themes) || !db.themes.length) {
+    // Libraries saved before themes existed: turn the old global text style into the default theme.
+    db.themes = structuredClone(SAMPLE.themes);
+    if (db.style) Object.assign(db.themes[0], { font: db.style.font, size: db.style.size, color: db.style.color });
+    db.defaultThemeId = db.themes[0].id;
+  }
+  delete db.style;
+  editThemeId = defaultTheme().id;
   renderAll();
   pushState();
 })();

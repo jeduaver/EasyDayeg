@@ -24,6 +24,7 @@ Three windows open:
 - `→` / `Space` next slide (rolls into the next playlist item), `←` previous, `B` black, `C` clear text, `Esc` clear all.
 - **+ New** or double-click an item to edit. A blank line in the lyrics starts a new slide. Each item can have its own image, video or colour background.
 - Drag playlist entries to reorder.
+- **Themes** (right panel) hold a reusable look: font, weight, size, colour, alignment, position (top, middle or lower third), shadow, outline, all caps and an optional background. Pick a theme for the selected item from the menu next to **Edit**; items without one use the theme marked ★. **+ New** copies the current theme so you can tweak it. Background order: the item's own background, then its theme's, then the default background.
 - Everything saves automatically to `library.json` in the app's data folder (`~/Library/Application Support/EasyDayeg` on Mac, `%APPDATA%\EasyDayeg` on Windows).
 
 ## Build installers
