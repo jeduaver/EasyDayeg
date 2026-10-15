@@ -3,11 +3,12 @@
   "productName": "EasyDayeg",
   "version": "0.1.0",
   "description": "Offline live presentation software for worship and events",
+  "author": "Jed",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "dist:mac": "electron-builder --mac",
-    "dist:win": "electron-builder --win"
+    "dist:mac": "electron-builder --mac --x64 --arm64 --publish never",
+    "dist:win": "electron-builder --win --x64 --publish never"
   },
   "devDependencies": {
     "electron": "^33.2.0",
@@ -15,8 +16,17 @@
   },
   "build": {
     "appId": "com.easydayeg.app",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "files": ["src/**/*"],
-    "mac": { "target": "dmg" },
-    "win": { "target": "nsis" }
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity",
+      "identity": null
+    },
+    "win": { "target": "nsis" },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
