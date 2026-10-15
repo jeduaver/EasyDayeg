@@ -1,5 +1,26 @@
 // Draws one slide (background + text + blackout) into the given elements.
 // Used by the audience output window and the operator's live preview.
+
+const JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' };
+const ALIGN_V = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
+
+// Applies a theme's text look (everything except size) to a flex text box.
+// Shared with the operator's slide thumbnails so they match the output.
+function applyThemeText(el, theme) {
+  const t = theme || {};
+  const align = t.align || 'center';
+  el.style.fontFamily = t.font || '';
+  el.style.fontWeight = t.weight || 600;
+  el.style.color = t.color || '#fff';
+  el.style.textAlign = align;
+  el.style.justifyContent = JUSTIFY[align] || 'center';
+  el.style.alignItems = ALIGN_V[t.valign] || 'center';
+  el.style.textTransform = t.uppercase ? 'uppercase' : 'none';
+  el.style.textShadow = t.shadow === false ? 'none' : '0 0.04em 0.12em rgba(0,0,0,.85)';
+  el.style.webkitTextStroke = t.outline ? '0.1em #000' : '0';
+  el.style.paintOrder = 'stroke fill';
+}
+
 function createRenderer(bgEl, textEl, blackEl) {
   let currentBgKey = null;
   let lastState = null;
@@ -43,8 +64,7 @@ function createRenderer(bgEl, textEl, blackEl) {
     setBackground(s.bg);
     bgEl.classList.toggle('hidden', !s.showBg);
     textEl.textContent = s.text || '';
-    textEl.style.color = (s.style && s.style.color) || '#fff';
-    textEl.style.fontFamily = (s.style && s.style.font) || '';
+    applyThemeText(textEl, s.style);
     textEl.classList.toggle('hidden', !s.showText);
     blackEl.classList.toggle('on', !!s.black);
     fit();

@@ -43,7 +43,7 @@ Tauri is the lighter alternative (smaller installers), but its webviews differ p
 ## Milestones
 
 1. **Prototype (done in this folder)**: library, playlist, operator view, audience output on a second display, stage display, backgrounds, clears, keyboard shortcuts, local JSON save.
-2. **Usable MVP**: text themes, media bin with drag-drop, playlist save/open, export/import, settings screen for display assignment.
+2. **Usable MVP**: text themes (done), media bin with drag-drop, playlist save/open, export/import, settings screen for display assignment.
 3. **Service-ready**: Bible module, timers, messages, stability on long services, crash recovery.
 4. **Ship**: installers, code signing, auto-update, user guide.
 

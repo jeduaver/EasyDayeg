@@ -82,3 +82,11 @@ dialog form { display: flex; flex-direction: column; gap: 12px; }
 dialog textarea { resize: vertical; font-family: var(--font); line-height: 1.5; }
 .actions { display: flex; gap: 8px; }
 .spacer { flex: 1; }
+
+input[type=text] { width: 100%; background: #16181c; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+.right label input[type=text] { width: 160px; }
+.right label.check, .checks label { justify-content: flex-start; gap: 6px; }
+.checks { display: flex; gap: 14px; flex-wrap: wrap; }
+.theme-panel .bg-row { flex-wrap: wrap; }
+.center .panel-head .group { align-items: center; }
+#itemTheme { width: 170px; padding: 3px 6px; font-size: 12px; }
