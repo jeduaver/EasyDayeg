@@ -1,0 +1,22 @@
+{
+  "name": "easydayeg",
+  "productName": "EasyDayeg",
+  "version": "0.1.0",
+  "description": "Offline live presentation software for worship and events",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.easydayeg.app",
+    "files": ["src/**/*"],
+    "mac": { "target": "dmg" },
+    "win": { "target": "nsis" }
+  }
+}

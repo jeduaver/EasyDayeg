@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data:; media-src 'self' file:; style-src 'self' 'unsafe-inline'">
+<title>EasyDayeg</title>
+<link rel="stylesheet" href="control.css">
+</head>
+<body>
+  <header>
+    <div class="brand">EasyDayeg</div>
+    <div class="group">
+      <button id="btnClearText" title="Clear text (C)">Clear Text</button>
+      <button id="btnClearBg" title="Clear background">Clear BG</button>
+      <button id="btnBlack" title="To black (B)">Black</button>
+      <button id="btnClearAll" class="danger" title="Clear all (Esc)">Clear All</button>
+    </div>
+    <div class="group">
+      <button id="btnOutput">Output Window</button>
+      <button id="btnStage">Stage Window</button>
+    </div>
+  </header>
+
+  <main>
+    <aside class="left">
+      <section class="panel grow">
+        <div class="panel-head">
+          <h2>Library</h2>
+          <button id="btnNew" class="small">+ New</button>
+        </div>
+        <input id="search" type="search" placeholder="Search songs and items">
+        <ul id="library" class="list"></ul>
+      </section>
+      <section class="panel grow">
+        <div class="panel-head">
+          <h2>Playlist</h2>
+          <button id="btnAddToPlaylist" class="small" title="Add selected library item">+ Add</button>
+        </div>
+        <ul id="playlist" class="list"></ul>
+      </section>
+    </aside>
+
+    <section class="center">
+      <div class="panel-head">
+        <h2 id="itemTitle">Select an item</h2>
+        <button id="btnEdit" class="small" disabled>Edit</button>
+      </div>
+      <div id="slides" class="slides"></div>
+    </section>
+
+    <aside class="right">
+      <section class="panel">
+        <h2>Live</h2>
+        <div class="preview">
+          <div id="pvBg" class="layer"></div>
+          <div id="pvText" class="pv-text"></div>
+          <div id="pvBlack" class="layer black"></div>
+        </div>
+        <div id="liveStatus" class="status"></div>
+      </section>
+      <section class="panel">
+        <h2>Default background</h2>
+        <div class="bg-row">
+          <input id="bgColor" type="color" value="#10213f">
+          <button id="bgMedia" class="small">Image / Video…</button>
+        </div>
+        <div id="bgName" class="muted"></div>
+      </section>
+      <section class="panel">
+        <h2>Text</h2>
+        <label>Size <input id="textSize" type="range" min="4" max="14" step="0.5" value="8"></label>
+        <label>Colour <input id="textColor" type="color" value="#ffffff"></label>
+        <label>Font
+          <select id="textFont">
+            <option value='"Helvetica Neue", Arial, sans-serif'>Sans</option>
+            <option value='Georgia, "Times New Roman", serif'>Serif</option>
+            <option value='"Arial Black", Impact, sans-serif'>Bold</option>
+          </select>
+        </label>
+      </section>
+      <section class="panel muted keys">
+        <b>Keys</b> → / Space next · ← previous · B black · C clear text · Esc clear all
+      </section>
+    </aside>
+  </main>
+
+  <dialog id="editor">
+    <form method="dialog">
+      <h2 id="editorHeading">New item</h2>
+      <label>Title <input id="edTitle" required></label>
+      <label>Lyrics / text <span class="muted">(blank line = new slide)</span>
+        <textarea id="edLyrics" rows="16"></textarea>
+      </label>
+      <div class="bg-row">
+        <span>Background:</span>
+        <span id="edBgName" class="muted">Default</span>
+        <button type="button" id="edBgPick" class="small">Choose…</button>
+        <button type="button" id="edBgReset" class="small">Use default</button>
+      </div>
+      <div class="actions">
+        <button type="button" id="edDelete" class="danger">Delete</button>
+        <span class="spacer"></span>
+        <button value="cancel">Cancel</button>
+        <button id="edSave" value="save" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../shared/render.js"></script>
+  <script src="control.js"></script>
+</body>
+</html>
