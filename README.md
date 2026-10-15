@@ -28,10 +28,21 @@ Three windows open:
 
 ## Build installers
 
+Every push to `main` and every pull request builds installers on GitHub's Mac and Windows machines (see `.github/workflows/build.yml`). Download them from the run's **Artifacts** section on the Actions tab:
+
+- `EasyDayeg-macOS`: `.dmg` files for Apple Silicon (`arm64`) and Intel (`x64`) Macs
+- `EasyDayeg-Windows`: a `.exe` installer for 64-bit Windows
+
+Pushing a tag like `v0.1.0` also attaches the installers to a GitHub Release.
+
+To build on your own machine instead:
+
 ```bash
-npm run dist:mac   # on a Mac, produces a .dmg in dist/
-npm run dist:win   # on Windows, produces an installer in dist/
+npm run dist:mac   # on a Mac, writes .dmg files to dist/
+npm run dist:win   # on Windows, writes an installer to dist/
 ```
+
+The builds are not code-signed yet. On a Mac, the first time you open it, right-click the app and choose **Open** (or allow it under System Settings → Privacy & Security). On Windows, SmartScreen may warn; choose **More info → Run anyway**. Signing needs an Apple Developer account and a Windows code-signing certificate.
 
 ## Layout
 
